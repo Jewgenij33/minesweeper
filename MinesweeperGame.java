@@ -11,6 +11,7 @@ public class MinesweeperGame extends Game {
     private GameObject[][] gameField = new GameObject[SIDE][SIDE];
     private int countMinesOnField;
     private int countFlags;
+    private boolean isGameStopped;
 
     private static final String MINE = "\uD83D\uDCA3";
     private static final String FLAG = "\uD83D\uDEA9";
@@ -34,6 +35,7 @@ public class MinesweeperGame extends Game {
         }
         countMineNeighbors();
         countFlags = countMinesOnField;
+        isGameStopped = false;
     }
 
 
@@ -49,19 +51,20 @@ public class MinesweeperGame extends Game {
         }
     }
 
-    private void openTile(int x, int y){                                  //method which opening cell
+    private void openTile(int x, int y) {                                  //method which opening cell
         GameObject gameObject = gameField[y][x];
         gameObject.isOpen = true;
         setCellColor(x, y, Color.AQUAMARINE);
 
-        if (gameObject.isMine) {
-            setCellValue(gameObject.x, gameObject.y, MINE);
-        }else if (gameObject.countMineNeighbors == 0) {
+            if (gameObject.isMine) {                                        //method changed: when opening a cell with a mine, the method is called gameOver();
+                setCellValueEx(gameObject.x, gameObject.y, Color.RED, MINE);
+                gameOver();
+            } else if (gameObject.countMineNeighbors == 0) {
                 setCellValue(gameObject.x, gameObject.y, "");
                 List<GameObject> neighbors = getNeighbors(gameObject);
-                for(GameObject neighbor : neighbors){
-                    if(!neighbor.isOpen){
-                        openTile(neighbor.x,neighbor.y);
+                for (GameObject neighbor : neighbors) {
+                    if (!neighbor.isOpen) {
+                        openTile(neighbor.x, neighbor.y);
                     }
                 }
 
@@ -70,14 +73,44 @@ public class MinesweeperGame extends Game {
             }
         }
 
-
     @Override
     public void onMouseLeftClick(int x, int y) {                          //extended method which clicked mouse
         super.onMouseLeftClick(x, y);
         openTile(x, y);
     }
 
-    private List<GameObject> getNeighbors(GameObject gameObject) {        //add neighbors cell on field
+    @Override
+    public void onMouseRightClick(int x, int y) {
+        super.onMouseRightClick(x, y);
+        markTile(x, y);
+    }
+
+    private void markTile(int x, int y) {
+        GameObject gameObject = gameField[y][x];
+
+        if (!isGameStopped) {
+            if (countFlags != 0 && !gameObject.isOpen) {
+                if (!gameObject.isFlag) {
+                    setCellValue(gameObject.x, gameObject.y, FLAG);
+                    setCellColor(gameObject.x, gameObject.y, Color.RED);
+                    gameObject.isFlag = true;
+                    countFlags--;
+                } else {
+                    setCellValue(gameObject.x, gameObject.y, "");
+                    gameObject.isFlag = false;
+                    setCellColor(gameObject.x, gameObject.y, Color.ANTIQUEWHITE);
+                    countFlags++;
+                }
+            }
+        }
+    }
+
+    private void gameOver(){                                    //added a new method that ends the game and sets the flag "isGameStopped" to true
+        isGameStopped = true;
+        showMessageDialog(Color.RED, "Game failed!", Color.BROWN, 100);
+    }
+
+    private List<GameObject> getNeighbors (GameObject gameObject) {        //add neighbors cell on field
         List<GameObject> result = new ArrayList<>();
         for (int y = gameObject.y - 1; y <= gameObject.y + 1; y++) {
             for (int x = gameObject.x - 1; x <= gameObject.x + 1; x++) {
