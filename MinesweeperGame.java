@@ -51,33 +51,37 @@ public class MinesweeperGame extends Game {
         }
     }
 
-    private void openTile(int x, int y) {                                  //method which opening cell
-        GameObject gameObject = gameField[y][x];
-        gameObject.isOpen = true;
-        setCellColor(x, y, Color.AQUAMARINE);
-
-            if (gameObject.isMine) {                                        //method changed: when opening a cell with a mine, the method is called gameOver();
-                setCellValueEx(gameObject.x, gameObject.y, Color.RED, MINE);
-                gameOver();
-            } else if (gameObject.countMineNeighbors == 0) {
-                setCellValue(gameObject.x, gameObject.y, "");
-                List<GameObject> neighbors = getNeighbors(gameObject);
-                for (GameObject neighbor : neighbors) {
-                    if (!neighbor.isOpen) {
-                        openTile(neighbor.x, neighbor.y);
-                    }
-                }
-
-            } else {
-                setCellNumber(gameObject.x, gameObject.y, gameObject.countMineNeighbors);
-            }
-        }
 
     @Override
-    public void onMouseLeftClick(int x, int y) {                          //extended method which clicked mouse
-        super.onMouseLeftClick(x, y);
-        openTile(x, y);
-    }
+    public void onMouseLeftClick(int x, int y) {                           //extended method which clicked mouse
+            super.onMouseLeftClick(x, y);
+            openTile(x, y);
+        }
+
+    private void openTile(int x, int y) {                                  //method which opening cell
+        GameObject gameObject = gameField[y][x];
+
+        if (!gameObject.isOpen && !gameObject.isFlag && !isGameStopped) {
+                    gameObject.isOpen = true;
+                    setCellColor(x, y, Color.AQUAMARINE);
+                    if (gameObject.isMine) {                                          //method changed: when opening a cell with a mine, the method is called gameOver();
+                        setCellValueEx(gameObject.x, gameObject.y, Color.RED, MINE);
+                        gameOver();
+
+                    } else if (gameObject.countMineNeighbors == 0) {
+                        setCellValue(gameObject.x, gameObject.y, "");
+                        List<GameObject> neighbors = getNeighbors(gameObject);
+                        for (GameObject neighbor : neighbors) {
+                            if (!neighbor.isOpen) {
+                                openTile(neighbor.x, neighbor.y);
+                            }
+                        }
+                    } else {
+                        setCellNumber(gameObject.x, gameObject.y, gameObject.countMineNeighbors);
+                    }
+                }
+            }
+
 
     @Override
     public void onMouseRightClick(int x, int y) {
